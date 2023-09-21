@@ -49,10 +49,19 @@ export default function ({ file }: PdfViewerProps) {
 		}
 	};
 
+	const onThumbnailClick = (index: number) => {
+		const dom = pageDoms[index - 1];
+		const bouding = dom.getBoundingClientRect();
+
+		pageScroll.current?.scrollTo({
+			top: dom.offsetTop - 16,
+			// behavior: 'smooth',
+		});
+		setCurretn(index);
+	};
+
 	useEffect(() => {
 		if (thumbnailScroll.current) {
-			/* 进行操作 */
-
 			const dom = thumbnailDoms[current - 1];
 
 			const bouding = dom.getBoundingClientRect();
@@ -61,24 +70,28 @@ export default function ({ file }: PdfViewerProps) {
 			const maxTop =
 				(thumbnailScroll.current.offsetHeight || 0) - dom.offsetHeight;
 
-			if (dom.offsetTop > minTop && dom.offsetTop < maxTop) {
-				console.log(`${current}在可视区域`);
+			if (bouding.top > minTop && bouding.top < maxTop) {
+				/*  */
 			} else {
+				// 判断中间距离来确定滚动方向的
+
+				const { top: ttop } = dom.getBoundingClientRect();
+
+				const top =
+					ttop < 0
+						? dom.offsetTop - 16
+						: dom.offsetTop -
+						  thumbnailScroll.current.offsetHeight +
+						  dom.offsetHeight +
+						  16;
+
 				thumbnailScroll.current.scrollTo({
-					left: 0,
-					top:
-						dom.offsetTop -
-						thumbnailScroll.current.offsetHeight +
-						dom.offsetHeight +
-						16,
+					top,
 					behavior: 'smooth',
 				});
 			}
 		}
-		if (pageScroll.current) {
-			const dom = pageDoms[current];
-			/* 进行操作 */
-		}
+
 		// 不完全可视，则需要进行滚动
 	}, [current, thumbnailDoms, pageDoms]);
 
@@ -114,9 +127,7 @@ export default function ({ file }: PdfViewerProps) {
 										inputRef={ref => {
 											thumbnailDoms[index] = ref as HTMLDivElement;
 										}}
-										onItemClick={() => {
-											setCurretn(page);
-										}}
+										onItemClick={() => onThumbnailClick(page)}
 										className={`border-solid border-black ${
 											current === page ? ' opacity-100' : 'opacity-50'
 										}`}
@@ -125,7 +136,7 @@ export default function ({ file }: PdfViewerProps) {
 										key={index}
 									>
 										<div className=" absolute bottom-0 right-0 bg-black text-white text-[10px] w-4 h-4 flex items-center justify-center">
-											{page}
+											{page} {}
 										</div>
 									</Thumbnail>
 								);
@@ -166,7 +177,6 @@ export default function ({ file }: PdfViewerProps) {
 						setCurretn(current - 1);
 					}}
 				>
-					{' '}
 					Prev
 				</Button>
 				<Button
@@ -174,7 +184,6 @@ export default function ({ file }: PdfViewerProps) {
 						setCurretn(current + 1);
 					}}
 				>
-					{' '}
 					Next
 				</Button>
 				{/* <Slider value={scale} onChange={(value) => {
