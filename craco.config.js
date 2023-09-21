@@ -48,7 +48,7 @@ module.exports = () => {
 				// new HardSourceWebpackPlugin(),
 				new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /zh-cn/),
 				// 默认处理['css', 'scss', 'sass']
-				new StyleLintPlugin(),
+				// new StyleLintPlugin(),
 				...when(isAnalyze, () => [new WebpackBundleAnalyzer()], []),
 			],
 			babel: getBabelConf(),

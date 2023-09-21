@@ -13,6 +13,13 @@
 		<link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 		<title>React App</title>
 
+		<style>
+			#root{
+				position: absolute;
+				inset: 0;
+			}
+		</style>
+
 		<% for (var i in htmlWebpackPlugin.options.cdn &&
 		htmlWebpackPlugin.options.cdn.css){ %>
 		<link rel="stylesheet" href="<%= htmlWebpackPlugin.options.cdn.css[i] %>" />

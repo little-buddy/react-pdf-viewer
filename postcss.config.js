@@ -1,13 +1,15 @@
 module.exports = {
 	plugins: {
-		'tailwindcss/nesting': {},
+		// 'postcss-import',
+		// '@tailwindcss/nesting': {},
 		tailwindcss: {},
-		'postcss-flexbugs-fixes': {},
-		'postcss-preset-env': {
-			autoprefixer: { flexbox: 'no-2009' },
-			stage: 3,
-		},
-		'postcss-normalize': {},
+		autoprefixer: {},
+		// 'postcss-flexbugs-fixes': require('postcss-nesting'),
+		// 'postcss-preset-env': {
+		// 	autoprefixer: { flexbox: 'no-2009' },
+		// 	stage: 3,
+		// },
+		// 'postcss-normalize': {},
 
 		// px2rem 插件配置
 		// 'postcss-plugin-px2rem': {

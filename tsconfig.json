@@ -20,7 +20,12 @@
 			"@/*": ["./src/*"]
 		}
 	},
-	"include": ["src/**/*", "./.eslintrc.js"],
+	"include": [
+		"src/**/*",
+		"./.eslintrc.js",
+		"postcss.config.js",
+		"tailwind.config.js"
+	],
 	"exclude": [
 		/* 默认排除 node_moduels */
 	]
