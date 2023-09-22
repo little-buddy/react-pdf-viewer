@@ -1,7 +1,14 @@
 import type { HTMLAttributes, PropsWithChildren } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+	useCallback,
+	useDeferredValue,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 import { Document, Page, Thumbnail, pdfjs } from 'react-pdf';
-import type { File } from 'react-pdf/dist/cjs/shared/types';
+import type { DocumentCallback, File } from 'react-pdf/dist/cjs/shared/types';
 import Spin from './Spin';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdn.bootcdn.net/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -21,41 +28,52 @@ interface PdfViewerProps {
 	file: File;
 }
 
+const space = 16;
+
 export default function ({ file }: PdfViewerProps) {
 	const [current, setCurretn] = useState(1);
 	const [total, setTotal] = useState(0);
-	const [scale, setScale] = useState(1);
+	const [scale, setScale] = useState(100);
 	const container = useRef<HTMLDivElement>(null);
 	const pageScroll = useRef<HTMLDivElement>(null);
 	const thumbnailScroll = useRef<HTMLDivElement>(null);
+	const deferredScale = useDeferredValue(scale);
 
 	const thumbnailDoms: HTMLDivElement[] = useMemo(() => [], []);
 	const pageDoms: HTMLDivElement[] = useMemo(() => [], []);
 
-	// @ts-expect-error: yes
+	// @ts-expect-error normal
 	const onPageScroll = (_: UIEvent<HTMLDivElement>) => {
-		if (!container.current) {
+		if (!container.current || pageDoms.length < 1) {
 			return;
 		}
-		const { height, top: pTop } = container.current.getBoundingClientRect();
+		const dom = pageDoms[0];
+		const firstTop = dom.offsetHeight + space / 2;
+		const { scrollTop } = pageScroll.current || { scrollTop: 0 };
+		const curi =
+			scrollTop < firstTop
+				? 0
+				: Math.floor((scrollTop - firstTop) / (dom.offsetHeight + space)) + 1;
 
-		for (let i = 0; i < pageDoms.length; i += 1) {
-			const bouding = pageDoms[i].getBoundingClientRect();
-			const top = bouding.top - pTop;
-			i === 0 && console.log(top);
-			if (top > 0 && top < height / 2 && current !== i + 1) {
-				setCurretn(i + 1);
-			}
+		const topDom = pageDoms[curi];
+		const diff = scrollTop - topDom.offsetTop;
+		const minDiff = container.current.offsetHeight / 2 - space + space / 2;
+
+		const cur =
+			diff > -minDiff && diff < dom.offsetHeight + space - minDiff
+				? curi + 1
+				: curi + 2;
+
+		if (cur !== current) {
+			setCurretn(cur);
 		}
 	};
 
 	const onThumbnailClick = (index: number) => {
 		const dom = pageDoms[index - 1];
-		const bouding = dom.getBoundingClientRect();
 
 		pageScroll.current?.scrollTo({
-			top: dom.offsetTop - 16,
-			// behavior: 'smooth',
+			top: dom.offsetTop - space,
 		});
 		setCurretn(index);
 	};
@@ -64,66 +82,75 @@ export default function ({ file }: PdfViewerProps) {
 		if (thumbnailScroll.current) {
 			const dom = thumbnailDoms[current - 1];
 
-			const bouding = dom.getBoundingClientRect();
-
-			const minTop = 0;
+			const minTop = thumbnailScroll.current.scrollTop;
 			const maxTop =
-				(thumbnailScroll.current.offsetHeight || 0) - dom.offsetHeight;
+				minTop + (container.current?.offsetHeight || 0) - dom.offsetHeight;
 
-			if (bouding.top > minTop && bouding.top < maxTop) {
+			if (dom.offsetTop > minTop && dom.offsetTop < maxTop) {
 				/*  */
 			} else {
-				// 判断中间距离来确定滚动方向的
-
-				const { top: ttop } = dom.getBoundingClientRect();
+				const ttop = dom.offsetTop - thumbnailScroll.current.scrollTop;
 
 				const top =
 					ttop < 0
-						? dom.offsetTop - 16
+						? dom.offsetTop - space
 						: dom.offsetTop -
 						  thumbnailScroll.current.offsetHeight +
 						  dom.offsetHeight +
-						  16;
+						  space;
 
 				thumbnailScroll.current.scrollTo({
+					left: 0,
 					top,
 					behavior: 'smooth',
 				});
 			}
 		}
-
-		// 不完全可视，则需要进行滚动
 	}, [current, thumbnailDoms, pageDoms]);
+
+	const onLoadSuccess = useCallback(({ numPages }: DocumentCallback) => {
+		console.log('load successfully');
+		setTotal(numPages);
+	}, []);
+
+	const onLoadError = useCallback((e: Error) => {
+		console.log(e.message);
+	}, []);
+
+	const Loading = useMemo(
+		() => (
+			<div className=" absolute inset-0 flex justify-center items-center">
+				<Spin />
+			</div>
+		),
+		[]
+	);
 
 	return (
 		<Document
 			inputRef={container}
-			className="bg-[#EEE] h-full overflow-hidden rounded-md broder border-solid border-[#00000063] relative"
-			loading={
-				<div className=" absolute inset-0 flex justify-center items-center">
-					<Spin />
-				</div>
-			}
+			className="bg-[#EEE] h-full rounded-md border-solid border-[#00000063] relative"
+			loading={Loading}
 			file={file}
-			onLoadError={e => {
-				console.log(e.message);
-			}}
-			onLoadSuccess={({ numPages }) => {
-				setTotal(numPages);
-			}}
+			// options={{
+			//   withCredentials: true,
+			// }}
+			onLoadError={onLoadError}
+			onLoadSuccess={onLoadSuccess}
 		>
 			<div className="flex h-full">
 				<div
-					className="w-[160px] h-full overflow-y-scroll bg-white"
+					className="w-[160px] h-full overflow-y-scroll pt-4 pb-4 bg-white"
 					ref={thumbnailScroll}
 				>
-					<div className=" flex flex-col items-center space-y-4 pt-4 pb-4 ">
+					<div className=" flex flex-col items-center space-y-4 ">
 						{Array(total)
 							.fill(0)
 							.map((_, index) => {
 								const page = index + 1;
 								return (
 									<Thumbnail
+										loading={<Spin />}
 										inputRef={ref => {
 											thumbnailDoms[index] = ref as HTMLDivElement;
 										}}
@@ -136,7 +163,7 @@ export default function ({ file }: PdfViewerProps) {
 										key={index}
 									>
 										<div className=" absolute bottom-0 right-0 bg-black text-white text-[10px] w-4 h-4 flex items-center justify-center">
-											{page} {}
+											{page}
 										</div>
 									</Thumbnail>
 								);
@@ -144,53 +171,34 @@ export default function ({ file }: PdfViewerProps) {
 					</div>
 				</div>
 
-				<div className="flex-1 pt-4 pb-4">
+				<div className="flex-1 pt-4 pb-4 min-w-0">
 					<div
-						className="h-full w-full overflow-y-scroll"
+						className="h-full w-full overflow-y-scroll overflow-x-hidden"
 						ref={pageScroll}
 						onScroll={onPageScroll}
 					>
 						<div className="flex flex-col items-center space-y-4">
 							{Array(total)
 								.fill(0)
-								.map((_, index) => (
-									<Page
-										inputRef={ref => {
-											pageDoms[index] = ref as HTMLDivElement;
-										}}
-										scale={scale}
-										pageNumber={index + 1}
-										renderAnnotationLayer={false}
-										renderTextLayer={false}
-										key={index}
-									/>
-								))}
+								.map((_, index) => {
+									return (
+										<Page
+											inputRef={ref => {
+												pageDoms[index] = ref as HTMLDivElement;
+											}}
+											loading={<Spin />}
+											scale={deferredScale / 100}
+											pageNumber={index + 1}
+											renderAnnotationLayer={false}
+											renderTextLayer={false}
+											key={index}
+										/>
+									);
+								})}
 						</div>
 					</div>
 				</div>
 			</div>
-
-			<Row className=" absolute bottom-0">
-				TotalPage: {total}
-				<Button
-					onClick={() => {
-						setCurretn(current - 1);
-					}}
-				>
-					Prev
-				</Button>
-				<Button
-					onClick={() => {
-						setCurretn(current + 1);
-					}}
-				>
-					Next
-				</Button>
-				{/* <Slider value={scale} onChange={(value) => {
-		    console.log(value)
-		    setScale(value)
-		  }} style={{ width: 100 }} /> */}
-			</Row>
 		</Document>
 	);
 }
