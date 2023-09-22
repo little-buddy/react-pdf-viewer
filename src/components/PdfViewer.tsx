@@ -140,7 +140,7 @@ export default function ({ file }: PdfViewerProps) {
 		>
 			<div className="flex h-full">
 				<div
-					className="w-[160px] h-full overflow-y-scroll pt-4 pb-4 bg-white"
+					className="w-[160px] h-full overflow-y-scroll pt-4 pb-4 bg-white box-border"
 					ref={thumbnailScroll}
 				>
 					<div className=" flex flex-col items-center space-y-4 ">
@@ -183,6 +183,7 @@ export default function ({ file }: PdfViewerProps) {
 								.map((_, index) => {
 									return (
 										<Page
+											className=" shadow-lg"
 											inputRef={ref => {
 												pageDoms[index] = ref as HTMLDivElement;
 											}}
