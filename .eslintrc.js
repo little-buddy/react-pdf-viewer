@@ -43,6 +43,10 @@ module.exports = {
 			'error',
 			{ 'ts-expect-error': 'allow-with-description' },
 		],
+		/* react */
+		'react/require-default-props': 0,
+		'react/no-unused-prop-types': 0,
+		'react/jsx-props-no-spreading': 0,
 		// v4 changes
 		'no-use-before-define': 'off',
 		'@typescript-eslint/no-use-before-define': ['error'],
