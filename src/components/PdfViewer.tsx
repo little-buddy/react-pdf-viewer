@@ -131,6 +131,7 @@ function PdfViewer({ file, defaultScale = 100, space = 16 }: PdfViewerProps) {
 			space,
 			onThumbnailClick,
 			onPageScroll,
+			setScale,
 		}),
 		[
 			total,
@@ -143,6 +144,7 @@ function PdfViewer({ file, defaultScale = 100, space = 16 }: PdfViewerProps) {
 			space,
 			onThumbnailClick,
 			onPageScroll,
+			setScale,
 		]
 	);
 

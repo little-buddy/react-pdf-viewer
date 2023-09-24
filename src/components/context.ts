@@ -11,6 +11,7 @@ interface PdfViewerContextValue<T> {
 	thumbnailDoms?: HTMLDivElement[];
 	pageDoms?: HTMLDivElement[];
 	setCurretn?: Dispatch<SetStateAction<number>>;
+	setScale?: Dispatch<SetStateAction<number>>;
 	space?: number;
 	onThumbnailClick?: (args: OnItemClickArgs) => void;
 	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
