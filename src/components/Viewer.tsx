@@ -3,7 +3,7 @@ import { memo as ReactMemo, useCallback, useContext, useRef } from 'react';
 import { Page } from 'react-pdf';
 import type { PinchState } from '@use-gesture/react';
 import { usePinch } from '@use-gesture/react';
-import { useSpring, animated } from '@react-spring/web';
+import { useSpring } from '@react-spring/web';
 import { PdfViewerContext } from './context';
 import SpinView from './SpinView';
 
@@ -19,15 +19,18 @@ const ViewerItem = ReactMemo(({ page }: { page: number }) => {
 		[page, pageDoms]
 	);
 
+	console.log(scale);
+
 	return (
 		<Page
+			// renderMode="svg"
 			className="shadow-lg"
 			inputRef={inputRef}
 			loading={<SpinView />}
-			scale={5}
+			scale={scale / 100}
 			pageNumber={page}
-			renderAnnotationLayer={false}
-			renderTextLayer={false}
+			// renderAnnotationLayer={false}
+			// renderTextLayer={false}
 			key={page}
 		/>
 	);
@@ -50,10 +53,10 @@ const Viewer = ReactMemo(() => {
 			y: 0,
 			scale: 0.2,
 			rotateZ: 0,
-			// onChange: ({ value }) => {
-			// 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-			// 	setScale?.(value.scale.toFixed(2) * 100);
-			// },
+			onChange: ({ value }) => {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+				setScale?.(value.scale.toFixed(2) * 100);
+			},
 		};
 	});
 
@@ -65,6 +68,7 @@ const Viewer = ReactMemo(() => {
 			offset: [s, a],
 			memo: _memo,
 		}: PinchStateX) => {
+			// setScale(s);
 			let memo = _memo;
 			if (first) {
 				const { width, height, x, y } =
@@ -94,15 +98,15 @@ const Viewer = ReactMemo(() => {
 				ref={pageScroll}
 				onScroll={onPageScroll && onPageScroll}
 			>
-				<animated.div
+				<div
 					className="flex flex-col items-center space-y-4"
 					ref={listWrpaer}
-					style={style}
+					// style={style}
 				>
 					{list.map((_, index) => (
 						<ViewerItem page={index + 1} key={index} />
 					))}
-				</animated.div>
+				</div>
 			</div>
 		</div>
 	);
