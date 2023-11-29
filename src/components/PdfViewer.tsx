@@ -16,6 +16,11 @@ import 'react-pdf/dist/esm/Page/TextLayer.css';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdn.bootcdn.net/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
+const options = {
+	cMapUrl: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/cmaps/`,
+	standardFontDataUrl: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
+};
+
 interface PdfViewerProps {
 	file: File;
 	defaultScale?: number;
@@ -160,6 +165,7 @@ function PdfViewer({ file, defaultScale = 100, space = 16 }: PdfViewerProps) {
 				file={file}
 				onLoadError={onLoadError}
 				onLoadSuccess={onLoadSuccess}
+				options={options}
 			>
 				<div className="flex h-full">
 					<Thumbnail />
